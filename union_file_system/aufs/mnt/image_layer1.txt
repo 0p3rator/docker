@@ -1,0 +1,1 @@
+\nwrite to mnt/image_layer1.txt
