@@ -1,5 +1,7 @@
 package main
 
+// After run "go run cgroups.go", open a system shell, run "top", you will find "sh" shell's memory has been limited for 20% of system memory cap.
+
 import (
 	"fmt"
 	"io/ioutil"
@@ -16,9 +18,10 @@ func main() {
 	if os.Args[0] == "/proc/self/exe" {
 		fmt.Printf("current pid %d", syscall.Getpid())
 		fmt.Println()
-
-		// cmd := exec.Command("sh", "-c", `stress --vm-bytes 200m --vm-keep -m 1`)
-		cmd := exec.Command("sh", "-c", `echo "hello,world"`)
+		// At first,run "go run cgroups.go", I got "sh: 1 stress not found", I thought its reason is that my kernel version does not match requested.
+		// But one days later, I realized that my ubuntu has not installed "stress"... What a fool I am!
+		cmd := exec.Command("sh", "-c", `stress --vm-bytes 200m --vm-keep -m 1`)
+		// cmd := exec.Command("sh", "-c", `echo "hello,world"`)
 		cmd.SysProcAttr = &syscall.SysProcAttr{}
 
 		cmd.Stdin = os.Stdin
