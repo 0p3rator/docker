@@ -1,21 +1,37 @@
 package main
 
 import (
-	"docker/mydocker/container"
+	"mydocker/container"
+	"docker/mydocker/cgroups/subsystems"
+	"docker/mydocker/cgroups"
 	log "github.com/Sirupsen/logrus"
 	"os"
+	"strings"
 )
 
-/*
-	Start() here actually start to fork "cmd" created by "NewParentProcess()"
-		1. Clone a new process of which namespace is seperated with external environment
-		2. In the new process, fork "/proc/self/exec", send "init" args, and fork "initCommand" we have writed
-*/
-func Run(tty bool, command string) {
-	parent := container.NewParentProcess(tty, command)
+
+func Run(tty bool, comArray []string, res *subsystems.ResourceConfig) {
+	parent, writePipe := container.NewParentProcess(tty)
+	if parent == nil {
+		log.Errorf("New parent process error")
+		return
+	}
 	if err := parent.Start(); err != nil {
 		log.Error(err)
 	}
+	// use mydocker-cgroup as cgroup name
+	cgroupManager := cgroups.NewCgroupManager("mydocker-cgroup")
+	defer cgroupManager.Destroy()
+	cgroupManager.Set(res)
+	cgroupManager.Apply(parent.Process.Pid)
+
+	sendInitCommand(comArray, writePipe)
 	parent.Wait()
-	os.Exit(-1)
+}
+
+func sendInitCommand(comArray []string, writePipe *os.File) {
+	command := strings.Join(comArray, " ")
+	log.Infof("command all is %s", command)
+	writePipe.WriteString(command)
+	writePipe.Close()
 }
