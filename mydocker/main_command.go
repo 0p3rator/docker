@@ -4,8 +4,7 @@ import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/urfave/cli"
-	"docker/mydocker/container"
-	"docker/mydocker/cgroups/subsystems"
+	"github.com/xianlubird/mydocker/container"
 )
 
 var runCommand = cli.Command{
@@ -18,16 +17,8 @@ var runCommand = cli.Command{
 			Usage: "enable tty",
 		},
 		cli.StringFlag{
-			Name: "m",
-			Usage: "memory limit",
-		},
-		cli.StringFlag{
-			Name: "cpushare",
-			Usage: "cpushare limit",
-		},
-		cli.StringFlag{
-			Name: "cpuset",
-			Usage: "cpuset limit",
+			Name:  "v",
+			Usage: "volume",
 		},
 	},
 	Action: func(context *cli.Context) error {
@@ -39,13 +30,8 @@ var runCommand = cli.Command{
 			cmdArray = append(cmdArray, arg)
 		}
 		tty := context.Bool("ti")
-		resConf := &subsystems.ResourceConfig{
-			MemoryLimit: context.String("m"),
-			CpuSet: context.String("cpuset"),
-			CpuShare:context.String("cpushare"),
-		}
-
-		Run(tty, cmdArray, resConf)
+		volume := context.String("v")
+		Run(tty, cmdArray, volume)
 		return nil
 	},
 }
