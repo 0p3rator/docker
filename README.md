@@ -1,4 +1,4 @@
-# <<Develop docker by yourself>> 
+# Develop docker by yourself 
 
 ## my exercise code following book
 	
